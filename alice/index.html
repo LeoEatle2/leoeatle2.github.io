@@ -1088,4 +1088,48 @@ Reveal.initialize({
 })();
 </script>
 
-<script async>window.onload=function(){var a=document.createElement('script'),b=document.getElementsByTagName('script')[0];a.type='text/javascript',a.async=!0,a.src='/sw-register.js?v='+Date.now(),b.parentNode.insertBefore(a,b)};</script><script async src="/alice-mobile.js?v=20260919-mobile-lift"></script></body></html>
+<script async>window.onload=function(){var a=document.createElement('script'),b=document.getElementsByTagName('script')[0];a.type='text/javascript',a.async=!0,a.src='/sw-register.js?v='+Date.now(),b.parentNode.insertBefore(a,b)};</script><script data-alice-mobile-inline="1">;(function(){
+  var ALICE_MOBILE_SCRIPT='/alice-mobile.js';
+  if(!window.matchMedia || !window.matchMedia('(max-width:480px)').matches) return;
+  if(!/^\/alice\/?$/.test(location.pathname)) return;
+
+  var styleDone=false;
+  function injectStyle(){
+    if(styleDone || document.querySelector('style[data-alice-mobile]')) return;
+    styleDone=true;
+    fetch('/alice-mobile.css?v=20260919-mobile-lift', {cache:'no-store'})
+      .then(function(res){ return res.ok ? res.text() : ''; })
+      .then(function(css){
+        if(!css || document.querySelector('style[data-alice-mobile]')) return;
+        var st=document.createElement('style');
+        st.setAttribute('data-alice-mobile','1');
+        st.textContent=css;
+        document.body.appendChild(st);
+      })
+      .catch(function(){ styleDone=false; });
+  }
+
+  var tries=0;
+  function applyAliceMobile(){
+    tries++;
+    injectStyle();
+    if(!window.Reveal || !Reveal.isReady || !Reveal.isReady()){
+      if(tries < 80) return setTimeout(applyAliceMobile, 50);
+      return;
+    }
+    Reveal.configure({
+      width:390,
+      height:844,
+      margin:0,
+      minScale:0.2,
+      maxScale:1.25,
+      mobileViewDistance:2,
+      scrollActivationWidth:0
+    });
+    if(Reveal.layout) Reveal.layout();
+    var hint=document.querySelector('.cover .hint');
+    if(hint) hint.innerHTML='<span>\u5de6\u53f3\u6ed1\u52a8\u5207\u6362\u7ae0\u8282</span><span>\u4e0a\u4e0b\u6ed1\u52a8\u67e5\u770b\u672c\u7ae0\u7ec6\u8282</span><span>\u70b9\u53f3\u4e0b\u89d2\u7bad\u5934\u4e5f\u53ef\u4ee5\u7ffb\u9875</span>';
+  }
+  applyAliceMobile();
+})();
+</script></body></html>

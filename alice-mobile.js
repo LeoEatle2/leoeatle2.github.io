@@ -1,4 +1,5 @@
 ;(function(){
+  var ALICE_MOBILE_SCRIPT='/alice-mobile.js';
   if(!window.matchMedia || !window.matchMedia('(max-width:480px)').matches) return;
   if(!/^\/alice\/?$/.test(location.pathname)) return;
 
