@@ -1,58 +1,271 @@
-const ALICE_RUNTIME_CACHE = 'alice-runtime-20260919-mobile-v2';
+/**
+ * 自动引入模板，在原有 sw-precache 插件默认模板基础上做的二次开发
+ *
+ * 因为是自定导入的模板，项目一旦生成，不支持随 sw-precache 的版本自动升级。
+ * 可以到 Lavas 官网下载 basic 模板内获取最新模板进行替换
+ *
+ */
 
-self.addEventListener('install', event => {
-  self.skipWaiting();
-});
+/* eslint-disable */
 
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== ALICE_RUNTIME_CACHE).map(key => caches.delete(key))))
-      .then(() => self.clients.claim())
-      .then(() => self.clients.matchAll({ includeUncontrolled: true }))
-      .then(clients => clients.forEach(client => client.postMessage('sw.update')))
-  );
-});
+'use strict';
 
-function injectAliceMobile(response) {
-  return response.text().then(html => {
-    if (!html.includes('</body>') || html.includes('/alice-mobile.js')) return response;
-    const patched = html.replace('</body>', '<script src="/alice-mobile.js"></script></body>');
-    const headers = new Headers(response.headers);
-    headers.delete('content-length');
-    headers.set('content-type', 'text/html; charset=utf-8');
-    return new Response(patched, { status: response.status, statusText: response.statusText, headers });
-  });
+var precacheConfig = [["/2015/01/29/hello-2015/post-bg-2015.jpg","60c0fdc97779a352360a2a87189811ae"],["/2015/04/14/unix-linux-note/post-bg-unix-linux.jpg","c48aa178cea20c0b766dfe0790803337"],["/2015/05/25/js-module-loader/post-bg-js-module.jpg","c813533f88f10e75e7725607a10f9426"],["/2015/09/22/js-version/javascript-java.jpg","27cf6dba01010760a885db49c37c16a8"],["/2015/09/22/js-version/keep-calm-and-learn-javascript.png","a5c44173a8d6669ab43cf85fe5252da0"],["/2015/09/22/js-version/post-bg-js-version.jpg","2870973c65864ce20973340d672f842f"],["/2016/07/28/Hello-Hexo/bangong.jpg","9eace6cb6c3782ccf47ab6fe6723bb74"],["/2016/07/28/Hello-Hexo/dalou.jpg","267e8de9a0fc8e3380744b713609ef79"],["/2016/07/28/Hello-Hexo/index.html","d25609ba531894ff769e6e5d92e3f435"],["/2016/07/28/Hello-Hexo/kaifa.jpg","c1573aab8b7c4799e9acd1c85b0dbe74"],["/2016/07/28/Hello-Hexo/louti.jpg","af907eb5f1cb685ad50ab22de0c11a39"],["/2016/07/28/Hello-Hexo/nan.png","c54b6983be4a749aeaf74b4bc6c62627"],["/2016/07/28/Hello-Hexo/post-bg-2015.jpg","60c0fdc97779a352360a2a87189811ae"],["/2016/07/28/Hello-Hexo/shitang.jpg","4aa6d984830082bb7c350ab5f72b3543"],["/2016/07/28/Hello-Hexo/yejing.jpg","08ab3f859291db09e57fc5837d6248c1"],["/2016/07/28/Hello-Hexo/zonbu.jpg","84c1bc40902054ba7f5721cee27cf214"],["/2016/08/08/A-intresting-js/1.png","291f5b7b6470e8b7dabd0dd137cd564e"],["/2016/08/08/A-intresting-js/index.html","7d8604595ce00adf736a2cf01d346a13"],["/2016/09/02/The-inherit-in-javascript/index.html","f64e2ccf7552aa92c42e0913be31be24"],["/2016/09/20/令人伤心的博客碎片/index.html","d4081740782effa74b82fa93594dc127"],["/2016/11/11/LeetCode-121-Best-time-to-Buy-and-Sell-Stock/index.html","8839c84e1f4663c1a065d107e933c778"],["/2016/11/13/LeetCode-112-Path-Sum/index.html","315cb80f54d40e77b905bc200ef5f6d6"],["/2016/11/13/Leetcode-70-Climbing-Stairs/index.html","56db978cc314b927e65d5d95089d2f17"],["/2016/11/14/LeetCode-413-Arithmetic-Slices/index.html","2a2b0cb0d472128fac28cd1209966504"],["/2016/11/14/爬虫的意义在哪里？/index.html","42f9066446c8117ba452ee604ef0a839"],["/2016/11/15/LeetCode-202-Happy-Number/index.html","66de9c850940f3d9a6033bf4b3da4cfe"],["/2016/11/20/LeetCode-453-Minimum-Moves-to-Equal-Array-Elements/index.html","2c27657c9706ac4395231cdd5de732b1"],["/2016/11/21/LeetCode-438-Find-All-Anagrams-in-a-String/index.html","5176a6dd79851613448b199aca766e47"],["/2016/11/22/LeetCode-448-Find-All-Numbers-Disappeared-in-an-Array/index.html","58d384880dd10f2f0deb5ccec0e63174"],["/2016/11/23/LeetCode-455-Assign-Cookies/index.html","bb5d47f6621cb3d287fc28b479aeca10"],["/2016/11/26/LeetCode-130-Surrounded-Regions/index.html","b99358fe3910007c67a62187248887df"],["/2016/11/28/Docker学习笔记/2016-11-28 at 下午4.11.png","02f7488e4d747da509e7e1be9d4dcf7a"],["/2016/11/28/Docker学习笔记/container-layers.jpg","97c622c247ef510b06fee1aff4ec890f"],["/2016/11/28/Docker学习笔记/image-layers.jpg","adaabb4ae931eba8837211749d674dd3"],["/2016/11/28/Docker学习笔记/index.html","29ea2152846f6cee3a9474dfe93e2d25"],["/2016/11/28/LeetCode-190-Reversed-Bits/index.html","9abaa6b2d4ce1b7080348573baa527e1"],["/2016/11/28/SegmentFault开发文档笔记/index.html","12fac492597a94ed12ffeb4400b61bb2"],["/2016/11/29/LeetCode-123-Best-Time-to-Buy-and-Sell-Stock-3/index.html","605a41bb7fd1b2a2a304d3fb3f5e860a"],["/2016/11/29/Twig模板引擎学习笔记/index.html","ec2897d72ac14b75476dcc45716a26ed"],["/2016/11/30/Angular2-Typescript入门笔记/index.html","b37b16ff43c96a576253aeb347a7e6fb"],["/2016/11/30/compositionstart事件/index.html","402fc61e6172b15534d56b7e464319a9"],["/2016/12/06/记录一次有趣的coffee-script插件魔改/index.html","f59327003b6bcbfcab91822463b115c7"],["/2016/12/06/记录一次有趣的coffee-script插件魔改/需求.png","bb1d6b7833c3adaa2b65a9b1a0da2bf5"],["/2016/12/07/Javascript各种模块引入机制比较/index.html","79e7e39a83a46d0f0954e21a9018ca5e"],["/2016/12/07/LeetCode-415-Add-Strings/index.html","7060efc86dd63a2fe0e87afdce227b89"],["/2016/12/08/Javascript设计模式与开发实践-笔记/index.html","8d21592002326d6cd29d4a329bf50620"],["/2016/12/08/SegmentFault-gulp配置笔记/index.html","18f6ffebe890b70cc472e028123eedf4"],["/2016/12/10/SFDC笔记/index.html","893def54cebd97919fa1ebb3c37d9f72"],["/2016/12/13/LeetCode-396-Rotate-Function/index.html","0bc613e4160916d72d0c62784f9fe272"],["/2016/12/13/深入浅出node-js-笔记/index.html","9f31664f4f9d4456f1bc9164a466dfc6"],["/2016/12/17/LeetCode-274-H-index/index.html","1d808cd13810e9b882fae8443d972111"],["/2016/12/19/SegmentFault打工日记-魔改tagpopup组件纪录/index.html","ce200b958c9dae44386ad4f8bbf374a0"],["/2016/12/23/LeetCode-467-Unique-Substrings-in-Wraparound-String/index.html","b64bbd683dc1c8d6e09ff872590c8dca"],["/2016/12/25/LeetCode-129-Sum-Root-to-Leaf-Numbers/index.html","44d44b92efb96426fdfed12eeee52981"],["/2016/12/25/iOS-iOS-Apprentice-note/UIkit.png","e7407e9f8a33eaa1ff0ffff5c0a47f4e"],["/2016/12/25/iOS-iOS-Apprentice-note/connection.png","2d667856aac63dfadc1977e513ad6d72"],["/2016/12/25/iOS-iOS-Apprentice-note/index.html","dac7ad986d05c76f04234a7584c791ea"],["/2016/12/26/LeetCode-23-Merge-k-Sorted-Lists/index.html","ef0f6dcf96f92b92db3d6d6b2ca5ca2f"],["/2016/12/26/iOS-Stanford-Developing-iOS7/index.html","95262175655cdcc00119ec8005552aad"],["/2016/12/27/SegmentFault打工日记-Video-js和直播平台/index.html","f0feae53b50b20f4e5cf781d5215fb33"],["/2016/12/27/iOS-Stanford-Developing-iOS-Open-Class/index.html","9ee46da592c22dfa775db15030557788"],["/2016/12/31/LeetCode-116-Populating-Next-Right-Pointers-in-Each-Node/index.html","bb574a0b360b4d2e896a05490981b060"],["/2017/01/02/LeetCode-367-Valid-Perfect-Square/index.html","ea670fc8dbcfe98ad94d57be1b387c9d"],["/2017/01/02/LeetCode-74-Search-a-2D-matrix/index.html","3203b9c777fa800639c23c21c0fc00d2"],["/2017/01/03/LeetCode-125-Valid-Palindrome/index.html","0a854e1ef9be32b438fa3c5b918b791a"],["/2017/01/03/Swift-官方Swift-Tour学习笔记/index.html","1d4ceacb1b09809bca0ba238c39d7525"],["/2017/01/04/LeetCode-103-Binary-Tree-Zigzag-Level-Order-Traversal/index.html","59bcdf78d870478ceed24d728c29032e"],["/2017/01/09/LeetCode-397-Integer-Replacement/index.html","e69c423faad81522fd5832bac42de3b0"],["/2017/01/10/LeetCode-419-Battleships-in-a-Board/index.html","989902c6bc7aa794457175bd5e3f0db5"],["/2017/01/10/Ng-Angular1-x复习笔记/index.html","4e539fbab68f1eb1876db7ca8c9b88f6"],["/2017/01/11/LeetCode-406-Queue-Reconstruction-by-Height/index.html","2ee255e17704e8de8c5d9e46c069da6b"],["/2017/01/13/LeetCode-357-Count-Numbers-with-Unique-Digits/index.html","7faf804392a8c886a906d39bae8d4957"],["/2017/01/13/iOS-Start-Developing-iOS-Apps-Apple-Doc/index.html","59ea0253037f43cde2618a49db1abc7c"],["/2017/01/18/iOS-官网-iOS-Apps-Developing-2/index.html","2dac26a5ee1ebb81c702a6efa227ab37"],["/2017/01/22/Javascript忍者秘籍-读后感/index.html","83d87d6a91b7ffa97353301b36cf867c"],["/2017/01/25/iOS-官网的iOS-Guide-in-Swift-3/index.html","9134dd19ca09a2d0b8e0456057e92c83"],["/2017/01/25/iOS-官网的iOS-Guide-in-Swift-3/lifecircle.png","8dbd58d7b830402462d9708acbbfd01d"],["/2017/02/14/iOS-官网的iOS-Guide-in-Swift-4/index.html","df2813f1b95fdca2e795a625ffc4da92"],["/2017/02/15/iOS-官网的iOS-Guide-in-Swift-5/index.html","a4741a6c9aaa6405923cac055f4c30a5"],["/2017/02/17/iOS-官网的iOS-Guide-in-Swift-6/index.html","1343613742dd29f125b7e07e80dfa903"],["/2017/02/17/鹅厂打工日记——Redux文档学习-1/index.html","c3bcaa9ed260d88197d7d31bf9f83449"],["/2017/02/28/《The-JS-you-Dont-know》读书笔记/index.html","f2242440c872cdb5b024aec59b871e18"],["/2017/03/02/鹅厂打工日记——Jest-强大的React测试工具/index.html","c1b0d6c0e278c05952d650ca87a90a1a"],["/2017/03/03/Google-Android-System-learning/index.html","a244d9f9a4c18e90e27432ede6f67b8a"],["/2017/03/04/iOS-官网的iOS-Guide-in-Swift-7/index.html","1fcfaa03beb0b9b0da7257cc7b99dbd2"],["/2017/03/10/为什么WebAssembly能给javascript提速？/index.html","def06441b6c7f7a4d2927ba528420fc6"],["/2017/03/10/为什么WebAssembly能给javascript提速？/langs.png","f5f05c390e7205b40b3dd18286926b9f"],["/2017/03/10/为什么WebAssembly能给javascript提速？/toolchain.png","a1fd026158f74b82a81e43ce298ece17"],["/2017/03/14/鹅厂打工日记-React-loading组件设计/index.html","e7042ee1c38a35b35fa41e51b30c94ce"],["/2017/03/27/一个小坑-如何更改base64编码的svg图片颜色？/index.html","028d2436e8606f6d50e49a19ddd9aa91"],["/2017/03/30/鹅厂打工日记-Mocha/index.html","664df74bd16e491a3c3966f6c4171fab"],["/2017/03/31/鹅厂打工日记-Karma的使用和与Mocha的配合/index.html","8a0179136e179011365506d3014b519e"],["/2017/04/14/鹅厂打工日记-Webpack原理/index.html","d0f990631b18e1e6916decbf2fae710e"],["/2017/06/01/pwn-Windows逆向神器-OD-IDA/index.html","608c7e5f257f413fbddf4ddcb171e241"],["/2017/06/16/【鹅厂打工日记】iOS的UIWebView和Javascript的交互/index.html","aa7ad2e6139cd4cff8481392ea92c9d1"],["/2017/06/21/CSS的新属性：clip-path和mask/clip-path.gif","159f17e0931cc07a3b1d3e91e73c0687"],["/2017/06/21/CSS的新属性：clip-path和mask/firefox-mask-vs-clip.gif","93d99f9bb711759fcdb821fc92aeb4cb"],["/2017/06/21/CSS的新属性：clip-path和mask/firefox-mask-vs-clip2.gif","93d99f9bb711759fcdb821fc92aeb4cb"],["/2017/06/21/CSS的新属性：clip-path和mask/font.png","3668a198be8d7bcb9de9e7561f3a1229"],["/2017/06/21/CSS的新属性：clip-path和mask/img_in_text.png","9e75d6a59cef73b29a9f70e613346c39"],["/2017/06/21/CSS的新属性：clip-path和mask/index.html","ce65d8144e96074c3dd492923b9529f4"],["/2017/06/21/CSS的新属性：clip-path和mask/move_mouse.gif","d60b8bddb40969b83a59abe8b63b67c6"],["/2017/06/22/Hybird的关键：WebView相关-1/index.html","f2da6ecabb15b42545911042654e87ce"],["/2017/09/08/编写Webpack插件笔记/index.html","5c6df30843d2bf39f068beae0b96c8da"],["/2017/11/30/Mobx学习笔记/index.html","4fa52396baf380bb8d575b0858f6275c"],["/2017/11/30/Test-travis-ci/index.html","b4af33e3cd49e63b080c376530b502b8"],["/2017/12/01/Use-flow-type-in-React-project/index.html","47008d335312b5d50188b040e82d893c"],["/2017/12/06/modify-ssh-config-to-login-with-different-rsa-key/index.html","0c34d4c9834907acc175394e19f738e1"],["/2018/06/26/flex-end-make-scrollbar-disappear/index.html","38ddcb0d9aba30749f9a2a5b7e4e531e"],["/2018/06/26/redux-state-change-but-react-not-render/index.html","607c6e6eef6447ae101ca811f0453bd2"],["/2018/07/02/阅读代码和英文文章小技巧/index.html","3f36d707263310f42a83686ba640b953"],["/2018/07/12/UI库的目录设计和babel-plugin-import/index.html","8ad542fc1a7d8a923ab100f741f9661c"],["/2018/07/31/SDT自我决定理论/index.html","dac468db5884fc11fa03934e05a8fdd6"],["/2018/08/04/React16源码解析-As-required-order/index.html","26e76b7982dd1b011ff63459c1dcb7af"],["/2018/08/05/React16源码解析（Fiber）/index.html","80939894a9e9c6ab658a1eeb1ac2f070"],["/2018/08/05/React16源码解析（ReactDOM）/index.html","fbf3b98f4c8fe263749c8225c8431347"],["/2018/08/27/释放webpack的真正潜力/index.html","48d15639f10058c754f18c5b3aa95edb"],["/2018/08/27/释放webpack的真正潜力/vscode-demo.png","4414ef03ced847b4673f625517a1c692"],["/2018/08/30/iOS-webview-scrolling-issue/index.html","9ac9a251a728501abe3379c51f873372"],["/2018/09/17/升级到Babel-7的经验/index.html","008c00a57f1b3932a430d9ea8d6a58f3"],["/2018/10/16/React-tip组件的设计/index.html","b0d906ff0bd76d5ce8ad7cc7f282bd24"],["/2018/11/17/【译】Facebook如何通过工具学习自动修复Bug ？/index.html","054c4ae94e5ceb4250b347b1cd79340d"],["/2018/12/08/jenkins问题定位/index.html","273347b008806bfd88dbe969a7f7aac2"],["/2018/12/21/React-SSR实践-压测/index.html","f25dbe198d0f48c5787f741b6391edb4"],["/2019/01/11/如何使用iOS的捷径生成PWA图标和web-app-manifest/index.html","34610459c1c1efb41095467333c08253"],["/2019/01/21/item2-profile-config/index.html","afb1efd2b61d3dce301dbb7e0e961290"],["/2019/01/22/i18n-about-Access-Language/index.html","4abeba391f0f6d307094486e8711fe38"],["/2019/02/27/Node-C-addon-学习笔记/index.html","46c90fe197417c301c82225f88266cf5"],["/2019/05/16/Modern-Crusaders/index.html","0d284590684aaaa5b1833fcc3e7f2aa2"],["/2019/05/22/使用docker构建老旧的前端项目/index.html","c67332e626d25bb49ed971169e5d5654"],["/2019/08/28/关于docker使用的一些记录/index.html","5ed8da8564d3bbbac3ac4ae93735a31b"],["/2019/08/30/全干工程师的基本素养/index.html","e5e56976127260e877c8b9e7cbcc348a"],["/2019/10/30/Using-rxdb-to-make-your-node-application-more-reactive/index.html","7ad4fc5d388212ed0500603b352a4dbb"],["/2019/11/05/Node中的C-与Javascript如何连接/index.html","bf3e2486d30f84edfd94cdce3cac84cc"],["/2019/12/02/One-example-of-Typescript-generics/index.html","f671cacf718ceaec1e48987b6a542669"],["/2019/12/04/有趣的上网冲浪之旅/index.html","3ea477fecf9e6b871d7feda25eb49734"],["/2020/04/17/企业微信国际化方案总结/index.html","88a31e2e68f41b16e248c75864399ac7"],["/2020/04/27/come-on-sweet-death/index.html","e7db3b483f3b46b67d195e32625b1575"],["/2020/05/21/LeetCode-1277-Count-Square-Submatrices-with-All-Ones/index.html","f3c2dcea4ccf861e3c24b0c97280ce11"],["/2020/05/27/LeetCode-886-Possible-Bipartition/index.html","dc68a50e490cb4f0f9d25a66ac054343"],["/2020/05/28/525-Contiguous-Array/index.html","f8f5554eeb532c8ba94822518f424688"],["/2020/06/01/LeetCode-207-Course-Schedule/index.html","9708a41a4483c98c50a707ea42693b47"],["/2020/06/03/LeetCode-1029-Two-City-Scheduling/index.html","2e3a32cbfa36b54795d3498eebcf844a"],["/2020/07/21/Node-js-与-epoll/index.html","d82a8966436c82a6aac38e26247a4b5b"],["/2021/01/14/记录一个babel编译typescript代码的坑/index.html","572e30dff6f27001027e0ba3f78d100e"],["/2021/03/02/总结一些测试vue组件的经验/index.html","b93ce111810d296fb7806627880bb9f9"],["/2021/03/15/Purpose/index.html","27d74465e34f7227c38860f68ab9e30e"],["/2021/03/16/和安全团队的斗智斗勇/index.html","cf211496878ddc261ffe08ca54d13bc9"],["/2021/10/26/nw-js-的devtool要如何设置成dark主题/index.html","52e42a9d5ba20967d8551f1e5a0e31e5"],["/2022/08/10/关于图片处理的一些事情/index.html","340d2c8667079b9ee31a36d7851a61dd"],["/404.html","8fb9f3b56368f15dfb375f85dac2b538"],["/about/index.html","817116c5cd750ede3c510ef627a0f1c5"],["/alice-mobile.css","8169d31f8206ea8b8b36cb6dbbe5fd51"],["/alice-mobile.js","56ef7459a69ee79e1150874d7aefa07e"],["/alice/img/01-ee2afe4f.jpg","39e62f8071c9bdf639f9186586bac0d2"],["/alice/img/02-96824f07.jpg","64645e2c85a214b332a34ebe606e9594"],["/alice/img/03-23094728.jpg","63f66b53e5b6e683558e3f70322432d1"],["/alice/img/04-375511e8.jpg","96b4091365279ae4e8ae51178a1074a6"],["/alice/img/05-2c5411f3.jpg","762f319cf2c7c388422be056041c56d0"],["/alice/img/06-decdf5e5.jpg","c60bbd607622944fb62a9256b7271075"],["/alice/img/07-9961af6e.jpg","d56676e6cc1b0f04c47853c7b0e95210"],["/alice/img/08-1e8905b7.jpg","5b3d0a1a57c2c0a63a013468e1f5884d"],["/alice/img/09-539af5f7.jpg","43402b92a8631f8d20bef368cef62b18"],["/alice/img/10-6091866b.jpg","0ccaac8de2718f13fb14c7afbbed1148"],["/alice/img/11-3e7516be.jpg","1fe9a3e30382089df89fcfe8aeb08f79"],["/alice/img/12-44268290.jpg","77fdc8e64a1ca98b2a18b99da9080c7f"],["/alice/img/13-9709db5b.jpg","f3eb6bd562d4262be3d9c7b897e2fc01"],["/alice/img/14-8bc800ac.jpg","a82a48d79aee1576b8226886fbb1e0db"],["/alice/img/15-a4047faa.jpg","b5b18c458786814f17c82b9bf391d75c"],["/alice/img/16-90e2ffc1.jpg","e18cd3b54a177d07b7d18ff992c1fbfb"],["/alice/img/17-4368884f.jpg","7fd2ab2e166fff8492af153f18571f74"],["/alice/img/18-f5e3f4c2.jpg","ba37b92e8f7fd41aa6023cf543e2f439"],["/alice/img/19-f4abf441.jpg","b4f6d55cc6d899580f8512727b77da82"],["/alice/img/20-b507f3f1.jpg","49815bc5b293f2c529816f6d73957140"],["/alice/img/21-4443a8ca.jpg","45a1f9bee04a883bc38521f116906f7a"],["/alice/img/22-56791f9a.jpg","9081d516adf4ddc86a5815df6a84fd3b"],["/alice/img/23-4ed30ac3.jpg","f1fbcd83ee3324368ba221558161ffce"],["/alice/img/24-575b30a3.jpg","55222c430fe7e5ed765b07071e6e2a33"],["/alice/img/25-ba06fa1c.jpg","f48b11b2740c2394f290d3a79e64c7ed"],["/alice/img/26-19025568.jpg","e5f69935d8d8b58076328f7d3e84bdff"],["/alice/img/27-a4199bd1.jpg","353d507bda21f194a587fdc73866e948"],["/alice/img/28-f006b3bc.jpg","b8ed99d902f6a016c0166d1ebc746806"],["/alice/img/29-fdd6489b.jpg","8ac441b95700656fee98af35641c5ef9"],["/alice/img/30-6065962a.jpg","b5b1abbe5e92d87a8c200c850d840aed"],["/alice/img/31-3a7202d4.jpg","d25d4efee045e5a1fc4e40b67e8e8897"],["/alice/img/32-2ce354bd.jpg","4b72b9063aec44f022251b3d6fb5f2f4"],["/alice/img/33-3a4da03e.jpg","f7bafaf4d11aa6f484e7527ada4992c5"],["/alice/img/34-69bdf272.jpg","d38bebb6a697aa09cd13d66d46e001d3"],["/alice/img/35-f1c7565b.jpg","c1ac592eedeb8de92f221f9ad79c28d4"],["/alice/img/36-622e264d.jpg","21cb2723dc95eaa7fa018b49d8009746"],["/alice/img/37-baf33a74.jpg","fe03020abefec246fc5591a04326fcc8"],["/alice/index.html","43ea91ed2a6ff4a3ff369e87e1dbaf61"],["/archive/index.html","4051310a30f572ebcd01afd74ef09d2f"],["/archives/2016/07/index.html","dec90ce7c39cd770490fe4958209ed61"],["/archives/2016/08/index.html","dc2678d8c8c790b4c0765f7c882c670f"],["/archives/2016/09/index.html","1b62eabb6e0e6c4b7737dbfb1abf4d13"],["/archives/2016/11/index.html","a720c2a5ffba4724b86560367768e4e4"],["/archives/2016/11/page/2/index.html","aa0584d97b02b98826c4dd0bcb8d53ca"],["/archives/2016/12/index.html","113344a211b980680835e567b679fcb4"],["/archives/2016/12/page/2/index.html","0e086d0e092832f0c06df953fe1ef94f"],["/archives/2016/index.html","ac01a6b99a9eb79ddb5e1d307504ab2c"],["/archives/2016/page/2/index.html","804c3b90c7c754e32e18b009e1a6ddce"],["/archives/2016/page/3/index.html","7375e15fc314a99531112a6582c99d0e"],["/archives/2016/page/4/index.html","f0a2f13c2f397d5bcfeceaa8988deef7"],["/archives/2017/01/index.html","9215ae410a4373160d08e2f48d57837a"],["/archives/2017/01/page/2/index.html","682d43679b53c20f67d0300b5e2bb148"],["/archives/2017/02/index.html","278aac40cb651092042da5d60e737c92"],["/archives/2017/03/index.html","4adf92014ab276613237fdfdbcd0dc55"],["/archives/2017/04/index.html","51ecf5fbce2182e9731915e371f2c81c"],["/archives/2017/06/index.html","ea6c4afc59c88faac556acfc0abe44d1"],["/archives/2017/09/index.html","f814d1da7222f6bf8536c6c33537f0b2"],["/archives/2017/11/index.html","bb0b5d85bb4742a917b6154ef4d5ace7"],["/archives/2017/12/index.html","86425d099ae2e6e3057ccae215cf0224"],["/archives/2017/index.html","b47885bbec0ab2ed696140cda29d6256"],["/archives/2017/page/2/index.html","a3b9c202a2244aaa5b886576a0acf3e2"],["/archives/2017/page/3/index.html","a30a93419bcccb5c3340639e8347d6f7"],["/archives/2017/page/4/index.html","b95a518b102d93f47caf76f49d842885"],["/archives/2018/06/index.html","f0465685aadb268a306bbedaea4c1ab3"],["/archives/2018/07/index.html","08a77bfcad0f5e1bec1805268497454d"],["/archives/2018/08/index.html","5c41e08c47d69d90f5bd9a18ce911268"],["/archives/2018/09/index.html","37fcf8d500bc6b2b334faf33717c4d69"],["/archives/2018/10/index.html","f109316b34274a8bcc74e713822692fb"],["/archives/2018/11/index.html","0dd8fbe9e1695ae8541f22edc6ce23ca"],["/archives/2018/12/index.html","986b078be3851c41832f504a8429e64c"],["/archives/2018/index.html","6f3090789e358c1c264a68af26e87a27"],["/archives/2018/page/2/index.html","978d6581ad10e489e05a10309167ab78"],["/archives/2019/01/index.html","ad6ba809582642cfc03596782b8c8f0d"],["/archives/2019/02/index.html","48f0eed9afb3fbb81f228dca8677798f"],["/archives/2019/05/index.html","2f7fc55f15336b8597853881fc810de7"],["/archives/2019/08/index.html","ca2f8215d018d54496ebef0e6fe72036"],["/archives/2019/10/index.html","fbe4e221d6b7ad9319e7838b0aa2e8e3"],["/archives/2019/11/index.html","5b274a8b0910f0bcf35a7dcd9023eb3d"],["/archives/2019/12/index.html","9d8ec46b6505ee8cc04314f68d979f5e"],["/archives/2019/index.html","05aa8e8b9febb5c79891dd270f5b46b0"],["/archives/2019/page/2/index.html","5284cc5ccce58ec848ae6bb3a2890f34"],["/archives/2020/04/index.html","c1c999420030a17f14d02eb1c5df5e78"],["/archives/2020/05/index.html","3abb907cb0705fa58e8ebfa43f4f1cca"],["/archives/2020/06/index.html","622367d6b5bd82079d72b5dcf238ff10"],["/archives/2020/07/index.html","c83e7f31a37ff0cfccf87867280d5d30"],["/archives/2020/index.html","8fa6621ffcf8f1dd1afaf3c5c1ae08d3"],["/archives/2021/01/index.html","cd23f505712bc84a539006da28d6616d"],["/archives/2021/03/index.html","1fb310e266c164640c353728f0872ed0"],["/archives/2021/10/index.html","cc29e9575df22eb406f8d7ba47082ece"],["/archives/2021/index.html","26b404858afd641ed75f7c91c9d1fd1d"],["/archives/2022/08/index.html","897714201351c314bbbe95f6ba633fde"],["/archives/2022/index.html","2078ffa3cb974679684b90a7b3a21e3b"],["/archives/index.html","0ff0332ac5e3fcadcac26c9ec90ef685"],["/archives/page/10/index.html","ab0ef7fa98973c5a29cdea73beb3d077"],["/archives/page/11/index.html","850bd79f81c4f3b243e5c6bde85c305f"],["/archives/page/12/index.html","a7b82760a1601de7a66487ff17ee25c1"],["/archives/page/2/index.html","f937ce29839a01964344eb964b545b46"],["/archives/page/3/index.html","800431d23768d557bbf295c0d1857d47"],["/archives/page/4/index.html","a69e868bc51fa15f878c4f034af6a51f"],["/archives/page/5/index.html","7ce014a354f4bb5767f5acb19fcd18af"],["/archives/page/6/index.html","ae50c5c913b64611615ce895fdc4593b"],["/archives/page/7/index.html","7c06036edabb2f5376b7e0d05fc7a404"],["/archives/page/8/index.html","10c2cfaff7c78cce91d288cd4fbdce79"],["/archives/page/9/index.html","929425e98418bc656ead4a3528c67681"],["/css/bootstrap.css","be665bb9f0f7fc89f515adb828fa0a9b"],["/css/bootstrap.min.css","58a49b3689d699cb72ffda7252d99fcb"],["/css/hux-blog.css","b669eb0511b08a52a6fa0037ef268aed"],["/css/hux-blog.min.css","7c52a5e8fd56bc562ae3115df1013793"],["/css/syntax.css","7f76d2bfdb381ddb5ecae3adbee461e2"],["/fonts/glyphicons-halflings-regular.eot","f4769f9bdb7466be65088239c12046d1"],["/fonts/glyphicons-halflings-regular.svg","89889688147bd7575d6327160d64e760"],["/fonts/glyphicons-halflings-regular.ttf","e18bbf611f2a2e43afc071aa2f4e1512"],["/fonts/glyphicons-halflings-regular.woff","fa2772327f55d8198301fdb8bcfc8158"],["/fonts/glyphicons-halflings-regular.woff2","448c34a56d699c29117adc64c43affeb"],["/img/404-bg.jpg","8f22a4ecdbdd94fd10f25ba8a934fe1d"],["/img/about-bg.jpg","64285147432e40ef95b1a2ff869d75a5"],["/img/avatar.jpg","abbbad189b36cb1d0f01e689d361b034"],["/img/contact-bg.jpg","0e38f139028cb4a784071a5865b9be85"],["/img/home-bg-o.jpg","afbd595ed462e39a93a3b676aa2ea7a4"],["/img/home-bg.jpg","47e73ec09d800c915d07de3628411082"],["/img/icon/android-icon-144x144.png","d202a43f4acc9ab58d8b49db52f3b1bd"],["/img/icon/android-icon-192x192.png","3db39aa67a190c7cc228142c38ca3116"],["/img/icon/android-icon-36x36.png","564010017e892a6b155df282eb4219f1"],["/img/icon/android-icon-48x48.png","f253397924f9f26643c7c6a79db8ba1a"],["/img/icon/android-icon-72x72.png","5ec2b6219eeb2ce5ae6248a38b088de2"],["/img/icon/android-icon-96x96.png","dd08e7a189e9d04907ade304879573a7"],["/img/icon/apple-icon-114x114.png","0afdd9a37902c212f000f2f32a8e60d2"],["/img/icon/apple-icon-120x120.png","e4751e71e836f37d4c5fe262b0024dad"],["/img/icon/apple-icon-144x144.png","d202a43f4acc9ab58d8b49db52f3b1bd"],["/img/icon/apple-icon-152x152.png","93388257840293e1d40e81512fe01ab4"],["/img/icon/apple-icon-180x180.png","6190429a55a26ea620f8738fe3f86f85"],["/img/icon/apple-icon-57x57.png","afca9e7605c04cacf65241ef697b0dc0"],["/img/icon/apple-icon-60x60.png","7d312bb24cb3156775afed056ef7dd7b"],["/img/icon/apple-icon-72x72.png","5ec2b6219eeb2ce5ae6248a38b088de2"],["/img/icon/apple-icon-76x76.png","dda4b1174095d91bda96193e149bc0db"],["/img/icon/apple-icon-precomposed.png","c36f75fe9134eb5f6d25720f6dcfd8af"],["/img/icon/apple-icon.png","c36f75fe9134eb5f6d25720f6dcfd8af"],["/img/icon/favicon-16x16.png","7ff5e2f720a1ff68aff44956a7cd496e"],["/img/icon/favicon-32x32.png","aa12518f9eb4a5cd98aa32232757ada8"],["/img/icon/favicon-96x96.png","dd08e7a189e9d04907ade304879573a7"],["/img/icon/icon-128x128.png","685d7eda0555b997d8a911461592490f"],["/img/icon/icon-144x144.png","2764561b941647d7608be02fa39accef"],["/img/icon/icon-152x152.png","f51cdcd069f2e9a825e3717903b72fa0"],["/img/icon/icon-192x192.png","68893733522f8e023dcf00f33a6b072a"],["/img/icon/icon-384x384.png","68893733522f8e023dcf00f33a6b072a"],["/img/icon/icon-512x512.png","68893733522f8e023dcf00f33a6b072a"],["/img/icon/icon-72x72.png","cee41433a2cde5c6c96dfa13d1dd4f29"],["/img/icon/icon-96x96.png","d2b978d993bfbb81bfabfcafebfbba4a"],["/img/icon/ms-icon-144x144.png","d202a43f4acc9ab58d8b49db52f3b1bd"],["/img/icon/ms-icon-150x150.png","0de44329bf3786b62d2ff890987f3ebc"],["/img/icon/ms-icon-310x310.png","d533790d064141237c076cd34d7f229d"],["/img/icon/ms-icon-70x70.png","e604c81e7280860ff7e25a743756c907"],["/img/tag-bg.jpg","f7631fc49641e65a4ea663378526e323"],["/index.html","cff0b0253252ba368519a76c22f83533"],["/js/bootstrap.js","6bfd171748f088ad503cb07c080b1f33"],["/js/bootstrap.min.js","046ba2b5f4cff7d2eaaa1af55caa9fd8"],["/js/hux-blog.js","c55159aa9ce700288f00a5ac4d6c8597"],["/js/hux-blog.min.js","506a54b6cbf3629bb9e71b1bd09e6317"],["/js/jquery.js","cf26f8f0ccb06be71e92d8db0fb64ab5"],["/js/jquery.min.js","32015dd42e9582a80a84736f5d9a44d7"],["/js/jquery.nav.js","773b606a62ed173595099c9238c4728a"],["/js/jquery.tagcloud.js","29be493c486274b127c2d68503892ce5"],["/js/motto.min.js","32ac04a01348373cdd7d9799ca1baa5e"],["/js/scrollreveal.min.js","4606eec941fee1fea86cf4494c4f227f"],["/leetcode/index.html","07e49e21549b05d0b8f9149b941191a9"],["/page/10/index.html","0f3bd1a514e97d20908a1fcc6e48bd98"],["/page/11/index.html","db1bc6fb53c71a063ac8bb8b995b724b"],["/page/12/index.html","04da51ef602275594a275071a30f3dab"],["/page/2/index.html","269f4ac805637074dc79e610456404db"],["/page/3/index.html","3169f82b2559106f387cce729fb1a9a1"],["/page/4/index.html","d381c9e7d6bdc5b03d608a2badffc22f"],["/page/5/index.html","9e2652981cd3de9ed92f28d57ac1f43e"],["/page/6/index.html","f0ce8de4aa5c13eca09a8fbd041403e8"],["/page/7/index.html","8acddc0eceb8eff13f3448704bcd5d08"],["/page/8/index.html","93e29eb1c17c929e2f38abde2fad6055"],["/page/9/index.html","d480e391422da957969baa5e28a19173"],["/sw-register.js","4359f9cffe2471dc64a1f0ac3778e509"],["/tags/Android/index.html","dba372291af060ebf16d57dc773e2b06"],["/tags/Angular2/index.html","2786f5991dadf900c819b336f23f7ded"],["/tags/Babel/index.html","feb4e3f871df7b1444ba8e48bd89aad1"],["/tags/C/index.html","e1e3ffa089926ee47d15fb999b0a982e"],["/tags/CSS/index.html","e7010623f01d8f6e5637d997d95f78c4"],["/tags/Coffeescript/index.html","0841fbc632aa5c034806d3f3d2da4de0"],["/tags/Compiler/index.html","c7ddb5be542243a1787fb6a9d2e5ff6a"],["/tags/Component/index.html","98107f225f48b3397f267c295e4e4f7e"],["/tags/Design-Pattern/index.html","2c1a50fb069338ca6701b44a4fcdda18"],["/tags/Docker/index.html","12fbcce25f1e46f9865435fe4f50429f"],["/tags/ES6/index.html","b1c4578f3d8ecb67a04a428b88c8c296"],["/tags/Game/index.html","1fab9613fa67355d6b30ff6712b00bab"],["/tags/Gulp/index.html","47b5e4802799df5a07804b67a70f50ad"],["/tags/Hybird/index.html","6bd9342660e5865a6c65248b9a9a1500"],["/tags/JIT/index.html","54a584aa9bdbe6526a3bc18f94354406"],["/tags/Javascirpt/index.html","b3d52bd89f8f9407123f3698f6cdcd26"],["/tags/Javascript/index.html","e5082369102f1e768505a337f7f06a15"],["/tags/Jest/index.html","ccd2688c024986ef6bc2e91d23e6cff3"],["/tags/LeetCode/index.html","5ea1291f4c8dc702d58dc6f271e0b1d9"],["/tags/LeetCode/page/2/index.html","bbf7d2de18d10e88c4755f9330a5ef9a"],["/tags/LeetCode/page/3/index.html","e60032594f02025b593ac86477cb9b31"],["/tags/Leetcode/index.html","3732e6a09b5eed363b668c57153f4f17"],["/tags/Linux/index.html","b43afb474783b099c25654b458bbc100"],["/tags/Lyrics/index.html","1132a8db86523c729fe97d0dcef68b73"],["/tags/Mobx/index.html","e0877ecb90620604bf00ab7b5d890e43"],["/tags/Mocha/index.html","f17088931c10fd1f496d3d461cf40652"],["/tags/Module/index.html","025ccc37199eacd09750cf94e00d9dff"],["/tags/Node-js/index.html","d93ebb90edaad3df1b0848bbbbe1923a"],["/tags/Node/index.html","51e4e273a91388b8549fe2875a5f5e9c"],["/tags/Note/index.html","3dd2475fc6296876494f60129dded580"],["/tags/Object-C/index.html","23619f410aa5091f94d0ec42dfdd642f"],["/tags/Objective-C/index.html","1daeac6deac6fd17ae9cf27596f8b407"],["/tags/PHP/index.html","2ad28c425aa3b7c13dc9bb868ab9ba06"],["/tags/Python/index.html","6218e13b5eebab1e3b2731758fd79208"],["/tags/Python/page/2/index.html","e4acea5aa9e3a682531be343046c5c8d"],["/tags/Python/page/3/index.html","172eb059adda456879ba1e77a887d521"],["/tags/React-js/index.html","6f879709d56438e44a14b6de60469e90"],["/tags/React/index.html","c708b9734a0a21be4849a95ce1c3b1b7"],["/tags/Redux/index.html","3cf047bdbd8f57ed478d8e81950515e6"],["/tags/Require-js/index.html","2951b8a2b6aebe8739c0af9c211353b6"],["/tags/SSR/index.html","fbdca6a58f01dc9670cfed3050f90523"],["/tags/SegmentFault/index.html","236e286682bfde71c5abf8e9e471fc55"],["/tags/Swift/index.html","30a46158ba1b3bcd67c0bf1936dfa54e"],["/tags/Template-Engine/index.html","06e5f231d83a9ff90fe79d8d50562d82"],["/tags/Test/index.html","c0eb00d473bb7cc1bf119684d4e67090"],["/tags/Twig/index.html","553c067f13988bb18f05a2475ea24466"],["/tags/Typescript/index.html","1b0e1b361b89198ba2f9d14256c619bf"],["/tags/V8/index.html","7a3c6b553753b0ebeed695f23123a78f"],["/tags/WebAPI/index.html","200044297c33e8eb85e077f2b00a62ce"],["/tags/Webpack/index.html","c3856665f231b329e93ffe7bb5e59d66"],["/tags/Webview/index.html","59a03754c4aeb758c7a3053067c58f32"],["/tags/Windows/index.html","4454ed028059ffe89440cf21dff09f15"],["/tags/babel/index.html","bed6a64d51eab0bfaacaa5d7cfe4606d"],["/tags/base64/index.html","8b1f3fd73826acf8ec13d61735e52dd1"],["/tags/bootstrap/index.html","f11ca6c1b15d8dbee50c804d867a3878"],["/tags/ci/index.html","d1b516d484ce392fa9182de76610a0d0"],["/tags/codepen/index.html","0600a500e939270bf316937cd4a589a0"],["/tags/compact/index.html","51c57e0459b031a9a3fc0cb4428b519e"],["/tags/css/index.html","d37584fa8a312941c19aaf4f9660a2fd"],["/tags/database/index.html","9c0b1e7a3fb8c5d5624a55312498065d"],["/tags/docker/index.html","ab188ce8b8ef881ca6ae7059a7b7c940"],["/tags/event/index.html","d2483e29dbfcff5fc30aeeda55233771"],["/tags/facebook/index.html","9be262400593a5ed72dc643d94253c39"],["/tags/flask/index.html","e8e08d275f3d9de1217d2a104cbbe854"],["/tags/flow/index.html","ff645366e15b9b38892f8dec38e2b2eb"],["/tags/i18n/index.html","062a657b7c67cf5b06fe36d06856a77d"],["/tags/iOS/index.html","325f96f4a444f315db639be721ff3477"],["/tags/iOS/page/2/index.html","d9dd521ad2add4debf2dfbb409278c82"],["/tags/index.html","624a42be194bc87e7659b2e03c0f4fca"],["/tags/javascirpt/index.html","879f58ab4f9554bfe28ef817c12d8f93"],["/tags/jest/index.html","64cf7520c43232601cbfea5a720d9489"],["/tags/jquery/index.html","2fc3f7fc4d7e683bd326fa9f9accffbd"],["/tags/life/index.html","8a019bedd1ef859c5d8406bfa7cb4420"],["/tags/lyrics/index.html","6d71f39986db90ba5bfd94cfe321d7c8"],["/tags/node/index.html","90dd78dafaade69c80a1a612474fe3e5"],["/tags/npm/index.html","dd28f8b4d7f7cd8a4ead7a4fdbe692ac"],["/tags/pwn/index.html","9c63c6b728863e571172e5a1e147d243"],["/tags/python/index.html","c5249661d914dc04bcd307b01606c978"],["/tags/reactive/index.html","c7a5e34bf2d9f2d4d09accd2067d879d"],["/tags/shell/index.html","2220d946ad1ae9e15c0f0e57d80f33d8"],["/tags/ssh/index.html","7075b70772578a3f499412028b5b9422"],["/tags/svg/index.html","9377fa63546c7bd581d15f5a5e0820b8"],["/tags/translate/index.html","6ce73411137298821df40c1dccf0b854"],["/tags/translation/index.html","f6688700bf6d0c1665f2c0858518cd8f"],["/tags/typescript/index.html","821a4a9473dc77f6b55cbc95649efe30"],["/tags/underscore/index.html","0afae3a0a2838b9e5a10805f049e1ab7"],["/tags/video-js/index.html","376a15823a0a9c9a218964d75202bcb9"],["/tags/webpack/index.html","2599207a65b7897de420d59b7c17bc8b"],["/tags/web安全/index.html","cfd0fbb51f65617683534c93ae8d7a75"],["/tags/函数式编程/index.html","3c637f23fe195d93e5617ef80362962b"],["/tags/各种开发者大会/index.html","2002d03d69941c8356aa171c6d27bd48"],["/tags/文档/index.html","4bf489eba673ce63168c5098cbcf53fa"],["/tags/构建工具/index.html","0f7528b209062b30bba1a0832858fa4d"],["/tags/测试/index.html","a1f9dc0d0bc72114c32dfe8c6b816567"],["/tags/生活/index.html","5cc665ca421f34194f97ed7f2b6b86d4"],["/tags/笔记/index.html","1ec282125cd620ebd3bc45b3f99fca40"],["/tags/读书笔记/index.html","f023d7b87f19488e157dd95463caa130"],["/tags/逆向/index.html","59b9235d00d9ccbf92ded0a634e58af1"],["/tags/随笔/index.html","49e15c250c85e8e3aa5fa2d6bbf60897"],["/tags/－-Test-Karma/index.html","61552f4f6c10f03a9f8a3598d2622585"],["/tags/－-杂谈/index.html","f597ad120ccd6dae5ba73e7a2f4c0fa3"],["/tags/－生活/index.html","f356a2cb4cc6aa42f33fbc79cd4b9c07"]];
+var cacheName = 'sw-precache-v3--' + (self.registration ? self.registration.scope : '');
+var firstRegister = 1; // 默认1是首次安装SW， 0是SW更新
+
+
+var ignoreUrlParametersMatching = [/^utm_/];
+
+
+var addDirectoryIndex = function (originalUrl, index) {
+    var url = new URL(originalUrl);
+    if (url.pathname.slice(-1) === '/') {
+        url.pathname += index;
+    }
+    return url.toString();
+};
+
+var cleanResponse = function (originalResponse) {
+    // 如果没有重定向响应，不需干啥
+    if (!originalResponse.redirected) {
+        return Promise.resolve(originalResponse);
+    }
+
+    // Firefox 50 及以下不知处 Response.body 流, 所以我们需要读取整个body以blob形式返回。
+    var bodyPromise = 'body' in originalResponse ?
+        Promise.resolve(originalResponse.body) :
+        originalResponse.blob();
+
+    return bodyPromise.then(function (body) {
+        // new Response() 可同时支持 stream or Blob.
+        return new Response(body, {
+            headers: originalResponse.headers,
+            status: originalResponse.status,
+            statusText: originalResponse.statusText
+        });
+    });
+};
+
+var createCacheKey = function (originalUrl, paramName, paramValue,
+    dontCacheBustUrlsMatching) {
+
+    // 创建一个新的URL对象，避免影响原始URL
+    var url = new URL(originalUrl);
+
+    // 如果 dontCacheBustUrlsMatching 值没有设置，或是没有匹配到，将值拼接到url.serach后
+    if (!dontCacheBustUrlsMatching ||
+        !(url.pathname.match(dontCacheBustUrlsMatching))) {
+        url.search += (url.search ? '&' : '') +
+            encodeURIComponent(paramName) + '=' + encodeURIComponent(paramValue);
+    }
+
+    return url.toString();
+};
+
+var isPathWhitelisted = function (whitelist, absoluteUrlString) {
+    // 如果 whitelist 是空数组，则认为全部都在白名单内
+    if (whitelist.length === 0) {
+        return true;
+    }
+
+    // 否则逐个匹配正则匹配并返回
+    var path = (new URL(absoluteUrlString)).pathname;
+    return whitelist.some(function (whitelistedPathRegex) {
+        return path.match(whitelistedPathRegex);
+    });
+};
+
+var stripIgnoredUrlParameters = function (originalUrl,
+    ignoreUrlParametersMatching) {
+    var url = new URL(originalUrl);
+    // 移除 hash; 查看 https://github.com/GoogleChrome/sw-precache/issues/290
+    url.hash = '';
+
+    url.search = url.search.slice(1) // 是否包含 '?'
+        .split('&') // 分割成数组 'key=value' 的形式
+        .map(function (kv) {
+            return kv.split('='); // 分割每个 'key=value' 字符串成 [key, value] 形式
+        })
+        .filter(function (kv) {
+            return ignoreUrlParametersMatching.every(function (ignoredRegex) {
+                return !ignoredRegex.test(kv[0]); // 如果 key 没有匹配到任何忽略参数正则，就 Return true
+            });
+        })
+        .map(function (kv) {
+            return kv.join('='); // 重新把 [key, value] 格式转换为 'key=value' 字符串
+        })
+        .join('&'); // 将所有参数 'key=value' 以 '&' 拼接
+
+    return url.toString();
+};
+
+
+var addDirectoryIndex = function (originalUrl, index) {
+    var url = new URL(originalUrl);
+    if (url.pathname.slice(-1) === '/') {
+        url.pathname += index;
+    }
+    return url.toString();
+};
+
+var hashParamName = '_sw-precache';
+var urlsToCacheKeys = new Map(
+    precacheConfig.map(function (item) {
+        var relativeUrl = item[0];
+        var hash = item[1];
+        var absoluteUrl = new URL(relativeUrl, self.location);
+        var cacheKey = createCacheKey(absoluteUrl, hashParamName, hash, false);
+        return [absoluteUrl.toString(), cacheKey];
+    })
+);
+
+function setOfCachedUrls(cache) {
+    return cache.keys().then(function (requests) {
+        // 如果原cacheName中没有缓存任何收，就默认是首次安装，否则认为是SW更新
+        if (requests && requests.length > 0) {
+            firstRegister = 0; // SW更新
+        }
+        return requests.map(function (request) {
+            return request.url;
+        });
+    }).then(function (urls) {
+        return new Set(urls);
+    });
 }
 
-self.addEventListener('fetch', event => {
-  const request = event.request;
-  if (request.method !== 'GET') return;
+self.addEventListener('install', function (event) {
+    event.waitUntil(
+        caches.open(cacheName).then(function (cache) {
+            return setOfCachedUrls(cache).then(function (cachedUrls) {
+                return Promise.all(
+                    Array.from(urlsToCacheKeys.values()).map(function (cacheKey) {
+                        // 如果缓存中没有匹配到cacheKey，添加进去
+                        if (!cachedUrls.has(cacheKey)) {
+                            var request = new Request(cacheKey, { credentials: 'same-origin' });
+                            return fetch(request).then(function (response) {
+                                // 只要返回200才能继续，否则直接抛错
+                                if (!response.ok) {
+                                    throw new Error('Request for ' + cacheKey + ' returned a ' +
+                                        'response with status ' + response.status);
+                                }
 
-  const url = new URL(request.url);
-  if (url.origin !== location.origin) return;
-
-  const isAlicePage = url.pathname === '/alice/' || url.pathname === '/alice/index.html';
-  const networkRequest = url.pathname === '/sw-register.js' || url.pathname === '/alice-mobile.js'
-    ? new Request(request, { cache: 'no-store' })
-    : request;
-
-  event.respondWith(
-    fetch(networkRequest)
-      .then(response => {
-        if (!response || !response.ok) return response;
-        if (isAlicePage) {
-          return injectAliceMobile(response).then(patched => {
-            const copy = patched.clone();
-            caches.open(ALICE_RUNTIME_CACHE).then(cache => cache.put(request, copy));
-            return patched;
-          });
-        }
-        const copy = response.clone();
-        caches.open(ALICE_RUNTIME_CACHE).then(cache => cache.put(request, copy));
-        return response;
-      })
-      .catch(() => caches.match(request, { ignoreSearch: true })
-        .then(cached => cached || caches.match(url.pathname, { ignoreSearch: true })))
-  );
+                                return cleanResponse(response).then(function (responseToCache) {
+                                    return cache.put(cacheKey, responseToCache);
+                                });
+                            });
+                        }
+                    })
+                );
+            });
+        })
+            .then(function () {
+            
+            // 强制 SW 状态 installing -> activate
+            return self.skipWaiting();
+            
+        })
+    );
 });
+
+self.addEventListener('activate', function (event) {
+    var setOfExpectedUrls = new Set(urlsToCacheKeys.values());
+
+    event.waitUntil(
+        caches.open(cacheName).then(function (cache) {
+            return cache.keys().then(function (existingRequests) {
+                return Promise.all(
+                    existingRequests.map(function (existingRequest) {
+                        // 删除原缓存中相同键值内容
+                        if (!setOfExpectedUrls.has(existingRequest.url)) {
+                            return cache.delete(existingRequest);
+                        }
+                    })
+                );
+            });
+        }).then(function () {
+            
+            return self.clients.claim();
+            
+        }).then(function () {
+                // 如果是首次安装 SW 时, 不发送更新消息（是否是首次安装，通过指定cacheName 中是否有缓存信息判断）
+                // 如果不是首次安装，则是内容有更新，需要通知页面重载更新
+                if (!firstRegister) {
+                    return self.clients.matchAll()
+                        .then(function (clients) {
+                            if (clients && clients.length) {
+                                clients.forEach(function (client) {
+                                    client.postMessage('sw.update');
+                                })
+                            }
+                        })
+                }
+            })
+    );
+});
+
+
+
+    self.addEventListener('fetch', function (event) {
+        if (event.request.method === 'GET') {
+
+            // 是否应该 event.respondWith()，需要我们逐步的判断
+            // 而且也方便了后期做特殊的特殊
+            var shouldRespond;
+
+
+            // 首先去除已配置的忽略参数及hash
+            // 查看缓存简直中是否包含该请求，包含就将shouldRespond 设为true
+            var url = stripIgnoredUrlParameters(event.request.url, ignoreUrlParametersMatching);
+            shouldRespond = urlsToCacheKeys.has(url);
+
+            // 如果 shouldRespond 是 false, 我们在url后默认增加 'index.html'
+            // (或者是你在配置文件中自行配置的 directoryIndex 参数值)，继续查找缓存列表
+            var directoryIndex = 'index.html';
+            if (!shouldRespond && directoryIndex) {
+                url = addDirectoryIndex(url, directoryIndex);
+                shouldRespond = urlsToCacheKeys.has(url);
+            }
+
+            // 如果 shouldRespond 仍是 false，检查是否是navigation
+            // request， 如果是的话，判断是否能与 navigateFallbackWhitelist 正则列表匹配
+            var navigateFallback = '';
+            if (!shouldRespond &&
+                navigateFallback &&
+                (event.request.mode === 'navigate') &&
+                isPathWhitelisted([], event.request.url)
+            ) {
+                url = new URL(navigateFallback, self.location).toString();
+                shouldRespond = urlsToCacheKeys.has(url);
+            }
+
+            // 如果 shouldRespond 被置为 true
+            // 则 event.respondWith()匹配缓存返回结果，匹配不成就直接请求.
+            if (shouldRespond) {
+                event.respondWith(
+                    caches.open(cacheName).then(function (cache) {
+                        return cache.match(urlsToCacheKeys.get(url)).then(function (response) {
+                            if (response) {
+                                return response;
+                            }
+                            throw Error('The cached response that was expected is missing.');
+                        });
+                    }).catch(function (e) {
+                        // 如果捕获到异常错误，直接返回 fetch() 请求资源
+                        console.warn('Couldn\'t serve response for "%s" from cache: %O', event.request.url, e);
+                        return fetch(event.request);
+                    })
+                );
+            }
+        }
+    });
+
+
+
+
+
+
+
+
+
+/* eslint-enable */
