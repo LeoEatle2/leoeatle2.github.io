@@ -110,6 +110,7 @@ code_dir: downloads/code
 i18n_dir: :lang
 skip_render:
   - alice/**
+  - sw.js
 
 # Writing
 new_post_name: :title.md # File name of new posts
@@ -156,11 +157,3 @@ deploy:
   repo: git@github.com:LeoEatle/leoeatle.github.io.git
   branch: master
 
-# service worker
-# offline config passed to sw-precache.
-service_worker:
-  maximumFileSizeToCacheInBytes: 5242880
-  staticFileGlobs:
-  - public/**/*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff,woff2}
-  stripPrefix: public
-  verbose: true
