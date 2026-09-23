@@ -97,6 +97,12 @@
   .adv{gap:9px;margin-top:12px;font-size:21px}
   .adv-n{font-size:15px}
   .wordmark{font-size:86px}
+  .hx-s{align-items:flex-start}
+  .hx-title{font-size:54px;margin-bottom:24px}
+  .hx-list{gap:14px;width:100%}
+  .hx-list li{gap:10px;font-size:19px;flex-wrap:wrap}
+  .hx-ic{width:24px;height:24px}
+  .hx-tag{font-size:11px;padding:3px 8px}
 
   .sizechart{gap:8px;width:100%}
   .sc-title{font-size:9px;margin-bottom:2px}
