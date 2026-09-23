@@ -166,6 +166,22 @@ html,body{background:var(--paper);margin:0}
 .reveal .slides section.present .ic3{animation-delay:1.25s}
 @keyframes ldrFlick{0%{opacity:0;transform:none}20%{opacity:1;transform:translateX(-4px)}30%{opacity:0}45%{opacity:1;transform:translateX(3px)}55%{opacity:.25;transform:none}70%{opacity:1}80%{opacity:0}100%{opacity:1;transform:none}}
 
+/* one more thing · alice harness (Arco purple-6 → pinkpurple-6) */
+.hx{--hx-a:#722ED1;--hx-b:#D91AD9;--hx-line:#DDBEF6}
+.spot.hx-spot{background:radial-gradient(ellipse 55% 45% at 50% 56%,rgba(146,72,232,.38),rgba(217,26,217,.14) 45%,rgba(0,0,0,0) 72%)}
+.hx-defs{position:absolute;width:0;height:0;overflow:hidden}
+.hx-s{justify-content:center}
+.hx-title{font-family:var(--display);font-weight:700;font-size:136px;line-height:1.02;letter-spacing:-.01em;margin:0 0 44px;background:linear-gradient(90deg,var(--hx-a),var(--hx-b));-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.08em;align-self:flex-start}
+.hx-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:24px}
+.hx-list li{display:flex;align-items:center;gap:20px;font-size:38px;font-weight:500;line-height:1.3;color:var(--ink)}
+.hx-ic{width:40px;height:40px;flex:none;transform:scale(.4);transition:transform .45s cubic-bezier(.3,1.6,.5,1) .12s}
+.reveal .slides section .fragment.visible .hx-ic{transform:scale(1)}
+.hx-ic-soon{animation:hxSpin 9s linear infinite}
+@keyframes hxSpin{to{rotate:360deg}}
+.hx-list li.hx-soon>span:not(.hx-tag){color:var(--muted)}
+.hx-tag{font-family:var(--mono);font-size:17px;font-weight:500;letter-spacing:.04em;line-height:1.2;padding:5px 13px;border:1px solid var(--hx-line);border-radius:999px;background:#fff;color:var(--hx-a)}
+@media (prefers-reduced-motion:reduce){.hx-ic-soon{animation:none}.hx-ic{transition:none}}
+
 /* one more thing */
 .reveal section.dark{color:#fff}
 .dark .p{color:rgba(255,255,255,.78)}
@@ -1032,6 +1048,31 @@ html,body{background:var(--paper);margin:0}
         </div>
         <div class="fig"><img src="img/37-baf33a74.jpg" alt="macOS 通知中心里的 Alice 原生通知"></div>
       </div>
+    </div>
+  </section>
+
+</section>
+
+<!-- ===== One More Thing · Alice Harness ===== -->
+<section style="--accent:#722ED1">
+  <section class="dark" data-background-color="#000000" data-transition="fade" data-transition-speed="slow" data-background-transition="fade">
+    <div class="s center">
+      <div class="spot hx-spot"></div>
+      <div class="omt">One more thing…</div>
+    </div>
+  </section>
+
+  <section class="hx" data-background-color="#FAE8FD" data-background-gradient="linear-gradient(135deg,#F5E8FF 0%,#FFE8FB 100%)" data-transition="fade" data-background-transition="fade">
+    <div class="s hx-s">
+      <svg class="hx-defs" width="0" height="0" aria-hidden="true"><defs><linearGradient id="hxGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#722ED1"/><stop offset="1" stop-color="#D91AD9"/></linearGradient></defs></svg>
+      <div class="eyebrow rise"><b></b>One more thing</div>
+      <h2 class="hx-title rise" style="--d:.1s">Alice Harness</h2>
+      <ul class="hx-list">
+        <li class="fragment fade-up"><svg class="hx-ic" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="url(#hxGrad)"/><path d="M9.5 16.5l4.3 4.3 8.7-9.3" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>任意切换模型</span></li>
+        <li class="fragment fade-up"><svg class="hx-ic" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="url(#hxGrad)"/><path d="M9.5 16.5l4.3 4.3 8.7-9.3" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>自动选择模型</span><span class="hx-tag">By Jev</span></li>
+        <li class="fragment fade-up"><svg class="hx-ic" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="url(#hxGrad)"/><path d="M9.5 16.5l4.3 4.3 8.7-9.3" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>更稳定的模型供给</span></li>
+        <li class="fragment fade-up hx-soon"><svg class="hx-ic hx-ic-soon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13.5" fill="none" stroke="url(#hxGrad)" stroke-width="3" stroke-dasharray="5 4.4" stroke-linecap="round"/></svg><span>更懂业务的 Memory</span><span class="hx-tag">Coming soon</span></li>
+      </ul>
     </div>
   </section>
 
